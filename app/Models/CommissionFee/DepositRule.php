@@ -11,5 +11,4 @@ class DepositRule extends Rule
     public float|null $limitPercent = null;
     public int|null $limitSum = null;
     public int|null $limitOperations = null;
-    public string|null $limitTime = null;
 }

@@ -11,20 +11,13 @@ class CommissionFeeController extends Controller
 {
     public CommissionFeeCalculationController $commissionFeeCalculationController;
 
-    public function __construct(
-        CommissionFeeCalculationController $commissionFeeCalculationController
-    )
+    public function __construct(CommissionFeeCalculationController $commissionFeeCalculationController)
     {
         $this->commissionFeeCalculationController = $commissionFeeCalculationController;
     }
 
-    public function calculate(
-        CommissionFeeCalculate $request
-    ): JsonResponse
+    public function calculate(CommissionFeeCalculate $request): JsonResponse
     {
-        return response()->json(
-            [
-                'success' => $this->commissionFeeCalculationController->calculate($request)
-            ]);
+        return response()->json($this->commissionFeeCalculationController->calculate($request));
     }
 }

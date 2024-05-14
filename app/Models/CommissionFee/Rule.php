@@ -11,5 +11,4 @@ abstract class Rule
     public float|null $limitPercent;
     public int|null $limitSum;
     public int|null $limitOperations;
-    public string|null $limitTime;
 }

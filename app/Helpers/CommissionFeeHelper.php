@@ -9,9 +9,9 @@ class CommissionFeeHelper
         return 'EUR';
     }
 
-    public static function round($number): float
+    public static function round(float $value): float
     {
-        return ceil($number * 100) / 100;
+        return ceil($value * 100) / 100;
     }
 
 

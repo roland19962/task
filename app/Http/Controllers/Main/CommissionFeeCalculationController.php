@@ -39,20 +39,30 @@ class CommissionFeeCalculationController extends Controller
     public function calculate(CommissionFeeCalculate $request): array
     {
         $result = [];
+
         $rates = $this->currencyExchangeRatesController->getRates();
+        if (array_key_exists('message', $rates))
+        {
+            return $rates;
+        }
+
         $data = CsvHelper::read($request->file('input'), ',');
-        $operations = $this->convertArrayToOperations($data, $rates);
+        $operations = $this->convertArrayToOperations($data, $rates['data']);
+
         $operationsLimitActive = [];
 
-        foreach ($operations as $operation) {
+        foreach ($operations as $operation)
+        {
             $rule = RuleHelper::getRule($this->depositRule, $this->withdrawPrivateRule, $this->withdrawBusinessRule,
                 $operation->typeOperation, $operation->typeUser);
-            if ($rule instanceof Rule) {
-                if ($rule->limitActive) {
+            if ($rule instanceof Rule)
+            {
+                if ($rule->limitActive)
+                {
 
                     $operationsLimitActive[$operation->group][] = $operation;
                     $totalBaseAmount = array_sum(array_column($operationsLimitActive[$operation->group], 'baseAmount'));
-                    $commission = $this->getCommission($operationsLimitActive[$operation->group], $rule, $totalBaseAmount, $rates);
+                    $commission = $this->getCommission($operationsLimitActive[$operation->group], $rule, $totalBaseAmount, $rates['data']);
 
                 } else {
                     $commission = $operation->amount * $rule->mainPercent / 100;
@@ -62,19 +72,21 @@ class CommissionFeeCalculationController extends Controller
                 $result[] = 'Rule not found';
             }
         }
-        return $result;
+        return [
+            'commissions' => $result,
+            'rates' => $rates['data']['date']
+        ];
     }
 
     public function convertArrayToOperations(array $data, array $rates): array
     {
         $operations = [];
-        foreach ($data as $item) {
-
+        foreach ($data as $item)
+        {
             $operations[] = new Operation(
                 $this->getGroup($item[0], $item[1], $item[2], $item[3], $operations),
                 $item[0], $item[1], $item[2], $item[3], $item[4], $item[5],
                 $this->getBaseAmount($item[5], $item[4], $rates));
-
         }
 
         return $operations;
@@ -82,7 +94,8 @@ class CommissionFeeCalculationController extends Controller
 
     public function getGroup(string $date, int $userId, string $typeUser, string $typeOperation, array $operations): string
     {
-        foreach ($operations as $operation) {
+        foreach ($operations as $operation)
+        {
             if ($operation->userId == $userId
                 && $operation->typeUser == $typeUser
                 && $operation->typeOperation == $typeOperation
@@ -103,7 +116,8 @@ class CommissionFeeCalculationController extends Controller
         $endDate->modify('Sunday this week');
         $range = new \DatePeriod($startDate, $interval, $endDate, \DatePeriod::INCLUDE_END_DATE);
 
-        foreach ($range as $day) {
+        foreach ($range as $day)
+        {
             if ($day->format('Y-m-d') == $currentDate) return true;
         }
 
@@ -112,7 +126,8 @@ class CommissionFeeCalculationController extends Controller
 
     public function getBaseAmount(string $currency, float $amount, array $rates): float
     {
-        if ($currency == CommissionFeeHelper::baseCurrency()) {
+        if ($currency == CommissionFeeHelper::baseCurrency())
+        {
             return $amount;
         } else {
             if ($rates['base'] != $currency) {
@@ -129,8 +144,10 @@ class CommissionFeeCalculationController extends Controller
     {
         $lastOperation = $operations[count($operations) - 1];
         $commission = 0;
-        if (count($operations) <= $rule->limitOperations) {
-            if ($totalBaseAmount < $rule->limitSum) {
+        if (count($operations) <= $rule->limitOperations)
+        {
+            if ($totalBaseAmount <= $rule->limitSum)
+            {
 
                 $commission = $lastOperation->amount * $rule->limitPercent / 100;
 
@@ -138,13 +155,14 @@ class CommissionFeeCalculationController extends Controller
 
                 $totalBaseAmountWithoutLastOperation = $totalBaseAmount - $lastOperation->baseAmount;
 
-                if ($totalBaseAmountWithoutLastOperation == 0) {
+                if ($totalBaseAmountWithoutLastOperation == 0)
+                {
 
                     $commission = $rule->limitSum * $rule->limitPercent / 100;
                     $commission += ($lastOperation->baseAmount - $rule->limitSum) * $rule->mainPercent / 100;
                     $commission *= $rates['rates'][$lastOperation->currency];
 
-                } else if ($totalBaseAmountWithoutLastOperation < $rule->limitSum) {
+                } else if ($totalBaseAmountWithoutLastOperation <= $rule->limitSum) {
 
                     $limitSum = $rule->limitSum - $totalBaseAmountWithoutLastOperation;
                     $commission = $limitSum * $rule->limitPercent / 100;

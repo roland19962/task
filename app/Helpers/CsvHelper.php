@@ -4,11 +4,13 @@ namespace App\Helpers;
 
 class CsvHelper
 {
-    public static function read($csvFile, $separator): array
+    public static function read(mixed $csvFile, string $separator): array
     {
         $array = [];
-        if (($handle = fopen($csvFile, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, $separator)) !== FALSE) {
+        if (($handle = fopen($csvFile, "r")) !== FALSE)
+        {
+            while (($data = fgetcsv($handle, 1000, $separator)) !== FALSE)
+            {
                 $num = count($data);
                 $item = [];
                 for ($index = 0; $index < $num; $index++) {

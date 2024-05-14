@@ -11,5 +11,4 @@ class WithdrawPrivateRule extends Rule
     public float|null $limitPercent = 0;
     public int|null $limitSum = 1000;
     public int|null $limitOperations = 3;
-    public string|null $limitTime = 'week';
 }

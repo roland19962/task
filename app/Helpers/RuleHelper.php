@@ -13,13 +13,16 @@ class RuleHelper
                             WithdrawBusinessRule $withdrawBusinessRule,
                             string $typeOperation, string|null $typeUser): Rule|null
     {
-        if ($typeOperation == $depositRule->typeOperation) {
+        if ($typeOperation == $depositRule->typeOperation)
+        {
             return $depositRule;
         }
-        if ($typeOperation == $withdrawPrivateRule->typeOperation && $typeUser == $withdrawPrivateRule->typeUser) {
+        if ($typeOperation == $withdrawPrivateRule->typeOperation && $typeUser == $withdrawPrivateRule->typeUser)
+        {
             return $withdrawPrivateRule;
         }
-        if ($typeOperation == $withdrawBusinessRule->typeOperation && $typeUser == $withdrawBusinessRule->typeUser) {
+        if ($typeOperation == $withdrawBusinessRule->typeOperation && $typeUser == $withdrawBusinessRule->typeUser)
+        {
             return $withdrawBusinessRule;
         }
         return null;
